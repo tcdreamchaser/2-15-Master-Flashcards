@@ -1,1 +1,707 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Master Flashcards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#D4AF37;
+    --gold-bright:#F2CB4E;
+    --black:#0B0B0C;
+    --charcoal:#161618;
+    --card:#1E1E20;
+    --line:#3A3A3D;
+    --text:#F5F1E6;
+    --text-dim:#B8B4A8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(circle at 20% 0%, #1a1a1c 0%, var(--black) 60%);
+    color:var(--text);
+    font-family:'Poppins',sans-serif;
+    min-height:100vh;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+  header{text-align:center;margin-bottom:22px;}
+  .kicker{
+    letter-spacing:3px;
+    font-size:11px;
+    color:var(--gold);
+    text-transform:uppercase;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(24px,6vw,34px);
+    margin:0 0 4px;
+    letter-spacing:0.5px;
+    color:var(--text);
+  }
+  h1 span{color:var(--gold-bright);}
+  .sub{color:var(--text-dim);font-size:13px;margin:0;}
+
+  .controls{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin:18px 0 6px;
+  }
+  select{
+    background:var(--charcoal);
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:9px 12px;
+    font-family:'Poppins',sans-serif;
+    font-size:13px;
+    outline:none;
+  }
+  .stats{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:16px 0 10px;
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  .progress-bar{
+    flex:1;
+    height:4px;
+    background:var(--line);
+    border-radius:4px;
+    margin:0 12px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--gold),var(--gold-bright));
+    width:0%;
+    transition:width .25s ease;
+  }
+
+  .stage{
+    perspective:1600px;
+    margin-top:10px;
+  }
+  .card{
+    position:relative;
+    width:100%;
+    height:300px;
+    cursor:pointer;
+  }
+  .card-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .card.flipped .card-inner{transform:rotateY(180deg);}
+  .face{
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    padding:26px 26px 20px;
+    border:1px solid var(--line);
+  }
+  .front{
+    background:linear-gradient(155deg,#1c1c1e,#111112);
+    justify-content:center;
+  }
+  .back{
+    background:linear-gradient(155deg,var(--gold) 0%, #B8902A 100%);
+    color:#171308;
+    transform:rotateY(180deg);
+    justify-content:center;
+  }
+  .face-label{
+    position:absolute;
+    top:14px;
+    left:18px;
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    font-weight:600;
+  }
+  .front .face-label{color:var(--gold);}
+  .back .face-label{color:#171308;opacity:.6;}
+  .face-cat{
+    position:absolute;
+    top:14px;
+    right:18px;
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    max-width:55%;
+    text-align:right;
+  }
+  .back .face-cat{color:#171308;opacity:.55;}
+  .qtext{
+    font-size:19px;
+    line-height:1.45;
+    font-weight:600;
+    text-align:center;
+  }
+  .atext{
+    font-size:16px;
+    line-height:1.5;
+    font-weight:500;
+    text-align:center;
+  }
+  .tap-hint{
+    position:absolute;
+    bottom:14px;
+    left:0;right:0;
+    text-align:center;
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .back .tap-hint{color:#171308;opacity:.55;}
+
+  .navrow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:18px;
+  }
+  button{
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  button:active{transform:scale(0.96);}
+  .nav-btn{
+    background:var(--charcoal);
+    color:var(--text);
+    border:1px solid var(--line);
+    padding:12px 18px;
+    font-size:14px;
+    flex:1;
+  }
+  .nav-btn:hover{border-color:var(--gold);}
+  .markrow{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+  }
+  .mark-btn{
+    flex:1;
+    padding:13px 10px;
+    font-size:13px;
+  }
+  .know-btn{background:#2A3B2C;color:#B7E3BC;}
+  .know-btn:hover{background:#33472F;}
+  .review-btn{background:#3B2A2A;color:#E3B7B7;}
+  .review-btn:hover{background:#472F2F;}
+
+  .shuffle-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-top:20px;
+  }
+  .ghost-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    padding:9px 16px;
+    font-size:12px;
+  }
+  .ghost-btn:hover{color:var(--gold);border-color:var(--gold);}
+
+  .done-screen{
+    text-align:center;
+    padding:50px 20px;
+    display:none;
+  }
+  .done-screen.show{display:block;}
+  .done-screen h2{
+    font-family:'Archivo Black',sans-serif;
+    color:var(--gold-bright);
+    font-size:26px;
+  }
+  .done-screen p{color:var(--text-dim);font-size:14px;}
+  .stage.hidden, .stats.hidden, .navrow.hidden, .markrow.hidden{display:none;}
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:11px;
+    margin-top:30px;
+    letter-spacing:1px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Florida 2-15 Life, Health &amp; Annuity</div>
+    <h1>2-15 <span>Master</span> Flashcards</h1>
+    <p class="sub">160 cards · every chapter · tap the card to flip</p>
+  </header>
+
+  <div class="controls">
+    <select id="catFilter"></select>
+    <select id="modeFilter">
+      <option value="all">All cards</option>
+      <option value="review">Marked for review only</option>
+    </select>
+  </div>
+
+  <div class="stats">
+    <span id="counter">1 / 160</span>
+    <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+    <span id="reviewCount">0 flagged</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="card" id="card">
+      <div class="card-inner">
+        <div class="face front">
+          <div class="face-label">Question</div>
+          <div class="face-cat" id="frontCat"></div>
+          <div class="qtext" id="qtext"></div>
+          <div class="tap-hint">Tap to reveal answer</div>
+        </div>
+        <div class="face back">
+          <div class="face-label">Answer</div>
+          <div class="face-cat" id="backCat"></div>
+          <div class="atext" id="atext"></div>
+          <div class="tap-hint">Tap to flip back</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="markrow" id="markrow">
+    <button class="mark-btn review-btn" id="markReview">🚩 Mark for review</button>
+    <button class="mark-btn know-btn" id="markKnow">✓ I know this</button>
+  </div>
+
+  <div class="navrow" id="navrow">
+    <button class="nav-btn" id="prevBtn">← Prev</button>
+    <button class="nav-btn" id="nextBtn">Next →</button>
+  </div>
+
+  <div class="shuffle-row">
+    <button class="ghost-btn" id="shuffleBtn">Shuffle deck</button>
+    <button class="ghost-btn" id="restartBtn">Restart deck</button>
+  </div>
+
+  <div class="done-screen" id="doneScreen">
+    <h2>Deck complete 🎉</h2>
+    <p id="doneStats"></p>
+    <button class="nav-btn" id="reviewFlagged" style="margin-top:14px;">Study flagged cards</button>
+  </div>
+
+  <footer>2-15 EXAM PREP &nbsp;·&nbsp; STUDY SMARTER</footer>
+</div>
+
+<script>
+const DECK = [
+// ===== LIFE INSURANCE POLICY TYPES =====
+{c:"Life Policy Types", q:"What type of term life insurance provides a death benefit that decreases over the policy term, often used to cover a mortgage?", a:"Decreasing term life insurance (mortgage redemption insurance)."},
+{c:"Life Policy Types", q:"What allows an insured to convert term insurance to permanent insurance without evidence of insurability?", a:"The option to convert."},
+{c:"Life Policy Types", q:"What allows a term policy owner to renew before expiration without evidence of insurability?", a:"The option to renew."},
+{c:"Life Policy Types", q:"What is the most basic form of whole life, with premiums payable for as long as the insured lives?", a:"Ordinary (Straight/Continuous Premium) Whole Life."},
+{c:"Life Policy Types", q:"What whole life policy creates an immediate cash value, is the most expensive initially, but may cost less overall?", a:"Single premium whole life."},
+{c:"Life Policy Types", q:"What type of whole life has a low initial premium for an introductory period, then jumps higher than a standard whole life premium would have been?", a:"Modified whole life insurance."},
+{c:"Life Policy Types", q:"How does a graded premium whole life plan differ from modified whole life in the early years?", a:"Graded premium increases annually during the initial period (rather than one lower flat rate), then jumps and levels off higher, like modified whole life."},
+{c:"Life Policy Types", q:"What is universal life insurance essentially structured as?", a:"A term policy with cash value, flexible premiums, and an adjustable death benefit."},
+{c:"Life Policy Types", q:"In Universal Life, what death benefit option equals face amount (pure insurance) plus cash value?", a:"Option B (level term plus increasing cash value)."},
+{c:"Life Policy Types", q:"In Universal Life, what death benefit option equals cash value plus remaining pure insurance?", a:"Option A (decreasing term plus increasing cash value)."},
+{c:"Life Policy Types", q:"What is the suggested premium used in universal life policies called?", a:"Target premium."},
+{c:"Life Policy Types", q:"What kind of life insurance has cash value and death benefit that vary with investment performance, held in a separate account, with a fixed premium?", a:"Variable Life (VL)."},
+{c:"Life Policy Types", q:"What hybrid policy combines Universal Life and Variable Life with flexible premiums and investor control?", a:"Universal Variable Whole Life (Variable Universal Life)."},
+{c:"Life Policy Types", q:"What policy covers two or more lives and pays a benefit on the first death?", a:"Joint life policy."},
+{c:"Life Policy Types", q:"What policy covers two or more lives and pays a benefit on the last death (second-to-die)?", a:"Last-to-die (survivor) policy."},
+{c:"Life Policy Types", q:"What policy combines whole life and level term to provide income for a specific period after the insured's death?", a:"Family maintenance policy."},
+{c:"Life Policy Types", q:"What policy is characterized by rapid cash value growth so it matures/endows at a specified date before age 100?", a:"An endowment policy."},
+{c:"Life Policy Types", q:"What happens if a life policy fails the 7-pay test?", a:"It becomes a Modified Endowment Contract (MEC), which doesn't meet the IRS definition of life insurance for tax purposes."},
+{c:"Life Policy Types", q:"What is it called when someone buys life insurance solely to sell it to a third party with no insurable interest?", a:"Stranger-Owned Life Insurance (STOLI)."},
+{c:"Life Policy Types", q:"What is a non-participating policy?", a:"A policy that does not pay dividends because it doesn't share in company earnings (typical of stock companies)."},
+
+// ===== ANNUITIES =====
+{c:"Annuities", q:"What is the primary use of an annuity?", a:"To provide income for retirement."},
+{c:"Annuities", q:"Is an annuity a life insurance contract?", a:"No, an annuity is NOT a life insurance contract."},
+{c:"Annuities", q:"Who is the person whose life determines annuity payouts?", a:"The annuitant."},
+{c:"Annuities", q:"Who has the power to terminate an annuity, withdraw funds, and name the beneficiary?", a:"The policy/contract owner."},
+{c:"Annuities", q:"What are the two time periods of an annuity?", a:"The accumulation (pay-in) period and the annuity (pay-out) period."},
+{c:"Annuities", q:"What provision lets an annuity owner surrender without surrender charges if interest rates fall below a stated level?", a:"A bailout provision."},
+{c:"Annuities", q:"What type of fixed annuity offers higher potential returns while guaranteeing principal?", a:"Equity indexed annuity (EIA)."},
+{c:"Annuities", q:"What annuity provides a fixed and guaranteed interest rate as long as it's held for a specified period?", a:"A market value adjusted (MVA) annuity."},
+{c:"Annuities", q:"Who bears the investment risk in a variable annuity?", a:"The contract owner (risk shifts from insurer to owner)."},
+{c:"Annuities", q:"What licenses/registrations does a producer need to sell variable annuities?", a:"A state insurance license AND FINRA registration."},
+{c:"Annuities", q:"When does an immediate annuity make its first payment?", a:"One payment interval after the date of purchase."},
+{c:"Annuities", q:"Under which annuity income option does the annuitant receive payments until the contract value is exhausted?", a:"The fixed amount option."},
+{c:"Annuities", q:"Which annuity income option pays a guaranteed income for life with no beneficiary payout?", a:"Straight life income."},
+{c:"Annuities", q:"Which annuity payout option guarantees payment for life but also a minimum number of guaranteed payments?", a:"Life with period certain."},
+{c:"Annuities", q:"In a joint and two-thirds survivor annuity option, what happens to the survivor's income?", a:"It's reduced to two-thirds of the original joint income."},
+{c:"Annuities", q:"Can an annuity contract be exchanged tax-free for a life insurance contract?", a:"No."},
+{c:"Annuities", q:"What type of annuity plan is reserved for non-profit and educational/school employees?", a:"A tax-sheltered annuity (TSA)."},
+{c:"Annuities", q:"How long do surrender charges typically apply on an annuity contract?", a:"The first five to eight years."},
+
+// ===== USES OF LIFE INSURANCE =====
+{c:"Uses of Life Insurance", q:"What approach calculates life insurance need based on a person's expected lifetime earnings?", a:"The Human Life Value Approach."},
+{c:"Uses of Life Insurance", q:"What approach determines coverage need based on the family's financial goals and objectives?", a:"The Needs Approach."},
+{c:"Uses of Life Insurance", q:"In a cross-purchase buy-sell plan, who owns and is beneficiary of the policies?", a:"Each partner buys and is the beneficiary of a policy on each other partner."},
+{c:"Uses of Life Insurance", q:"In an entity buy-sell plan, who buys the deceased partner's share?", a:"The business/partnership itself."},
+{c:"Uses of Life Insurance", q:"What is an entity plan called for a closely held corporation?", a:"A stock redemption plan."},
+{c:"Uses of Life Insurance", q:"What is the purpose of key person insurance?", a:"To prevent financial loss to a business when an owner, officer, or manager dies."},
+{c:"Uses of Life Insurance", q:"What executive benefit arrangement has an employer pay a bonus that the employee uses to buy their own life insurance?", a:"An executive bonus plan."},
+{c:"Uses of Life Insurance", q:"What benefit replaces an executive's income upon death, retirement, or disability, sponsored by the corporation?", a:"A salary continuation plan."},
+
+// ===== POLICY PROVISIONS, OPTIONS & RIDERS (LIFE) =====
+{c:"Life Provisions & Riders", q:"Where is the entire contract clause found in a policy?", a:"At the beginning of the policy."},
+{c:"Life Provisions & Riders", q:"What clause specifies that after a set period (typically 2 years) the insurer can't contest the policy's validity?", a:"The execution/incontestable clause."},
+{c:"Life Provisions & Riders", q:"Can misstatements about age or sex be contested at any time, even after the contestable period?", a:"Yes."},
+{c:"Life Provisions & Riders", q:"How long does an insured typically have to reinstate a lapsed life policy?", a:"Within three years of the lapse (up to 7 in some states)."},
+{c:"Life Provisions & Riders", q:"If the insurer doesn't accept/reject a reinstatement application within 45 days, what happens?", a:"Coverage is automatically reinstated as if it never lapsed."},
+{c:"Life Provisions & Riders", q:"What are the three non-forfeiture options?", a:"Cash surrender, reduced paid-up option, and extended term option."},
+{c:"Life Provisions & Riders", q:"Which non-forfeiture option provides the most life insurance protection?", a:"Extended term insurance option."},
+{c:"Life Provisions & Riders", q:"What provision lets the insurer automatically take a loan against cash value to pay an overdue premium?", a:"The automatic premium loan provision."},
+{c:"Life Provisions & Riders", q:"What rider allows a policy owner to access death benefits early if terminally ill?", a:"The accelerated benefits provision (living benefits/terminal illness rider)."},
+{c:"Life Provisions & Riders", q:"What rider generally pays when the insured cannot perform at least two Activities of Daily Living (ADLs)?", a:"The long-term care rider."},
+{c:"Life Provisions & Riders", q:"Name the 7 Activities of Daily Living (ADLs).", a:"Eating, dressing, bathing, toileting/continence, walking/ambulation, transferring, and taking medication."},
+{c:"Life Provisions & Riders", q:"What rider is typically added to universal/whole life policies to waive monthly deductions?", a:"The waiver of cost of insurance (waiver of monthly deductions) rider."},
+{c:"Life Provisions & Riders", q:"What is the death benefit paid under accidental death coverage called?", a:"The principal sum."},
+{c:"Life Provisions & Riders", q:"What is the dismemberment benefit typically equal to compared to the principal sum?", a:"One-half of the principal sum (the capital sum)."},
+{c:"Life Provisions & Riders", q:"What rider lets a policy owner buy additional coverage at set future dates without evidence of insurability?", a:"The guaranteed insurability option."},
+{c:"Life Provisions & Riders", q:"What rider is added to a policy an adult buys on a child's life, waiving premiums if the adult dies/becomes disabled?", a:"The payor rider."},
+{c:"Life Provisions & Riders", q:"What rider automatically increases the face amount based on CPI increases?", a:"The cost of living rider."},
+{c:"Life Provisions & Riders", q:"What is the difference between the 'status war clause' and the 'results clause'?", a:"Status war clause excludes coverage simply for being in the military; results clause excludes only deaths that occur while actually participating in military activities/maneuvers. Assume 'results clause' unless the question says otherwise."},
+
+// ===== PREMIUMS, PROCEEDS & BENEFICIARIES =====
+{c:"Premiums & Beneficiaries", q:"What are the three factors used in premium calculation?", a:"Mortality factor, interest factor, and expense factor."},
+{c:"Premiums & Beneficiaries", q:"What is the difference between mortality rate and morbidity rate?", a:"Mortality = frequency of deaths in a population; morbidity = occurrence of disease/sickness in a population."},
+{c:"Premiums & Beneficiaries", q:"What is the expense factor also called?", a:"The loading charge (or loading factor)."},
+{c:"Premiums & Beneficiaries", q:"What premium funding type has an initial low premium for the first 3-5 years, then a jump?", a:"Modified premium funding."},
+{c:"Premiums & Beneficiaries", q:"What settlement option lets the insurer hold the death benefit and pay only interest earned to the beneficiary?", a:"The interest only settlement option."},
+{c:"Premiums & Beneficiaries", q:"What settlement option pays proceeds in equal installments over a set number of years?", a:"The fixed period (period certain) option."},
+{c:"Premiums & Beneficiaries", q:"What life income settlement option guarantees a refund of principal less payments already made?", a:"The refund life income option (joint life option)."},
+{c:"Premiums & Beneficiaries", q:"Can a revocable beneficiary be changed without their consent?", a:"Yes, at any time by the policy owner."},
+{c:"Premiums & Beneficiaries", q:"Can an irrevocable beneficiary be changed without their consent?", a:"No, written consent of the beneficiary is required."},
+{c:"Premiums & Beneficiaries", q:"What does 'per stirpes' mean when distributing benefits?", a:"By the bloodline."},
+{c:"Premiums & Beneficiaries", q:"What does 'per capita' mean when distributing benefits?", a:"By the person / by the head."},
+{c:"Premiums & Beneficiaries", q:"Under the Uniform Simultaneous Death Act, if the insured and beneficiary die together and order of death can't be determined, who is presumed to have died first?", a:"The beneficiary is presumed to have died first (insured is considered to have survived)."},
+{c:"Premiums & Beneficiaries", q:"Are dividends paid on a whole life policy taxable?", a:"No — they're considered a tax-exempt return of overpaid premium."},
+{c:"Premiums & Beneficiaries", q:"What does a Section 1035 exchange allow?", a:"The postponement of tax consequences when exchanging one life/annuity contract for another."},
+{c:"Premiums & Beneficiaries", q:"A person who is chronically ill needs supervision due to what, or cannot perform how many ADLs?", a:"Cognitive impairment, or cannot perform at least two ADLs."},
+{c:"Premiums & Beneficiaries", q:"How long is someone expected to survive to NOT be considered terminally ill under viatical settlement rules?", a:"Terminally ill means not expected to survive more than 24 months."},
+{c:"Premiums & Beneficiaries", q:"In a viatical settlement, what are the original owner and the buyer called?", a:"The original owner is the viator; the buyer/new owner is the viatical (viatee)."},
+
+// ===== INSURANCE BASICS & COMPANY TYPES =====
+{c:"Insurance Basics", q:"What kind of insurer is owned by policyholders and issues participating policies?", a:"A mutual company."},
+{c:"Insurance Basics", q:"What kind of insurer is owned by stockholders and issues non-participating policies?", a:"A stock company."},
+{c:"Insurance Basics", q:"What is the revenue paid out as policy dividends by a mutual company called?", a:"The divisible surplus."},
+{c:"Insurance Basics", q:"What are the three defining characteristics of a fraternal benefit society?", a:"Non-profit, has a lodge system with ritualistic work and representative government, and was not formed solely to sell insurance."},
+{c:"Insurance Basics", q:"Who is appointed to handle transactions for a reciprocal insurer?", a:"An attorney-in-fact."},
+{c:"Insurance Basics", q:"What does a Risk Retention Group (RRG) provide, and to whom?", a:"Liability insurance to individuals/entities with a common bond."},
+{c:"Insurance Basics", q:"In reinsurance, what is the insurer who transfers risk to the reinsurer called?", a:"The ceding insurer (primary insurer)."},
+{c:"Insurance Basics", q:"What's the difference between treaty and facultative reinsurance?", a:"Treaty (automatic) reinsurance is an ongoing agreement covering risks meeting set criteria; facultative reinsurance covers a specific exposure without an ongoing agreement."},
+{c:"Insurance Basics", q:"What kind of insurer covers the loss exposure of its own parent organization?", a:"A captive insurer."},
+{c:"Insurance Basics", q:"What kind of company provides coverage when authorized insurers won't write the risk?", a:"A surplus lines carrier."},
+{c:"Insurance Basics", q:"What is an insurer called that's incorporated in the state where it's doing business?", a:"A domestic insurer."},
+{c:"Insurance Basics", q:"What is an insurer called that's incorporated under the laws of a different country?", a:"An alien insurer."},
+{c:"Insurance Basics", q:"What department reviews applications, selects risks, and assigns risk classifications?", a:"The underwriting department."},
+{c:"Insurance Basics", q:"What's the difference between an agent and a broker?", a:"An agent represents the insurer and can bind coverage; a broker represents the consumer and cannot bind coverage."},
+{c:"Insurance Basics", q:"What agency system doesn't recruit/train agents but focuses on sales in an assigned territory?", a:"The Personal Producing General Agency (PPGA) system."},
+{c:"Insurance Basics", q:"What court case first ruled insurance was NOT interstate commerce?", a:"Paul v. Virginia (1868)."},
+{c:"Insurance Basics", q:"What case reversed Paul v. Virginia, ruling insurance IS interstate commerce subject to federal regulation?", a:"United States v. Southeastern Underwriters Association (SEU, 1944)."},
+{c:"Insurance Basics", q:"What act delegated insurance regulation back to the states after the SEU decision?", a:"The McCarran-Ferguson Act (1945)."},
+{c:"Insurance Basics", q:"What does NAIC stand for and what is its role?", a:"National Association of Insurance Commissioners — creates model acts/regulations for state regulators."},
+
+// ===== LEGAL CONCEPTS =====
+{c:"Legal Concepts", q:"What are the four essential elements of every contract (C.L.O.C.)?", a:"Competent parties, Legal purpose, Offer and acceptance, and Consideration."},
+{c:"Legal Concepts", q:"Why is an insurance contract 'aleatory'?", a:"Because one party (the insured) may receive far more in value (claim payment) than they paid in premium — unequal exchange."},
+{c:"Legal Concepts", q:"Why is an insurance contract a 'contract of adhesion'?", a:"Because it's prepared solely by the insurer and offered on a take-it-or-leave-it basis; ambiguities are ruled against the insurer."},
+{c:"Legal Concepts", q:"Why is an insurance contract 'unilateral'?", a:"Only the insurer makes an enforceable promise, contingent on premium payment."},
+{c:"Legal Concepts", q:"Is life insurance a 'personal contract'? Why or why not?", a:"No — unlike most insurance, life insurance is transferable/assignable (can be sold or borrowed against)."},
+{c:"Legal Concepts", q:"When must insurable interest exist for a life insurance policy?", a:"At the time of application (not required to exist at time of claim/death)."},
+{c:"Legal Concepts", q:"What is the difference between a warranty and a representation?", a:"A warranty is guaranteed to be absolutely true; a representation is believed true to the best of the applicant's knowledge."},
+{c:"Legal Concepts", q:"What is concealment in insurance law?", a:"Failure or neglect by the applicant to disclose a known material fact."},
+{c:"Legal Concepts", q:"What's the difference between a void and a voidable contract?", a:"A void contract never took effect (missing an essential element); a voidable contract is in force but may be terminated due to a violated condition."},
+{c:"Legal Concepts", q:"What are the four elements required for estoppel to apply?", a:"Agent acting within authority, agent makes an inaccurate representation, consumer relies on it, and the insurer's later refusal causes the consumer financial harm."},
+{c:"Legal Concepts", q:"What's the difference between express and implied authority?", a:"Express authority is explicitly granted in the agency contract; implied authority is the ancillary authority assumed necessary to carry out express duties."},
+{c:"Legal Concepts", q:"What is apparent authority?", a:"The appearance of authority based on the principal's actions/words, even without a written agreement."},
+{c:"Legal Concepts", q:"What is subrogation?", a:"The insurer's right to pursue a liable third party for amounts it paid out in a claim."},
+{c:"Legal Concepts", q:"What insurance protects agents against claims of mistakes made rendering professional services?", a:"Errors and Omissions (E&O) liability insurance."},
+
+// ===== UNDERWRITING & POLICY ISSUE (LIFE) =====
+{c:"Underwriting & Policy Issue", q:"What is adverse selection?", a:"The tendency of higher-risk individuals to seek out insurance coverage."},
+{c:"Underwriting & Policy Issue", q:"What does the law of large numbers state?", a:"The larger the number of occurrences/exposures, the more predictable losses become."},
+{c:"Underwriting & Policy Issue", q:"Can a field underwriter (producer) issue the policy?", a:"No — only the home office underwriter issues the policy."},
+{c:"Underwriting & Policy Issue", q:"What are the three parts of a typical life insurance application?", a:"Part I: general info; Part II: health history; Part III: financial condition, character, and background of the sale."},
+{c:"Underwriting & Policy Issue", q:"For life insurance, what age is considered a minor?", a:"Under age 15."},
+{c:"Underwriting & Policy Issue", q:"What does a binding receipt guarantee?", a:"Coverage is guaranteed until the insurer formally rejects the application."},
+{c:"Underwriting & Policy Issue", q:"What organization is a clearinghouse of health information supplied by insurers?", a:"The Medical Information Bureau (MIB)."},
+{c:"Underwriting & Policy Issue", q:"What are the three risk classifications used in underwriting?", a:"Preferred risk, standard risk, and substandard risk."},
+{c:"Underwriting & Policy Issue", q:"What must agents provide to all life insurance applicants at the point of sale?", a:"A Buyer's Guide and a policy summary."},
+{c:"Underwriting & Policy Issue", q:"What is the purpose of backdating a policy?", a:"To use premium rates based on an earlier (younger) age."},
+
+// ===== RETIREMENT PLANS =====
+{c:"Retirement Plans", q:"When is a retirement plan considered 'top-heavy'?", a:"When more than 60% of plan assets belong to key employees as of the last day of the prior plan year."},
+{c:"Retirement Plans", q:"What is the purpose of ERISA?", a:"To protect the rights of workers covered under employer-sponsored retirement plans."},
+{c:"Retirement Plans", q:"What form satisfies annual ERISA reporting requirements for benefit plans?", a:"Form 5500."},
+{c:"Retirement Plans", q:"Are employees always vested in their own contributions?", a:"Yes, immediately."},
+{c:"Retirement Plans", q:"What are the three primary types of defined contribution plans?", a:"Profit-sharing plans, stock bonus plans, and money purchase plans."},
+{c:"Retirement Plans", q:"What's the tax penalty for early withdrawal (before 59½) from a profit-sharing plan?", a:"10% tax penalty plus income taxes."},
+{c:"Retirement Plans", q:"What kind of plan is designed for unincorporated businesses (sole proprietors/partnerships)?", a:"A Keogh plan."},
+{c:"Retirement Plans", q:"What defines eligibility for a SIMPLE plan?", a:"Small businesses with no more than 100 employees who earned at least $5,000 the previous year."},
+{c:"Retirement Plans", q:"What's the maximum traditional/Roth IRA contribution for someone under 50, and for 50+?", a:"$7,000 under 50; $8,000 for age 50+."},
+{c:"Retirement Plans", q:"By what age must traditional IRA owners begin required distributions?", a:"April 1 following the year they turn age 73."},
+{c:"Retirement Plans", q:"Name at least four reasons for an early IRA withdrawal that avoid the 10% penalty.", a:"Death/disability, qualifying medical expenses, higher education expenses, first-time home purchase (up to $10,000), health insurance premiums while unemployed, or correcting excess contributions."},
+{c:"Retirement Plans", q:"What happens if an IRA rollover isn't made directly between IRAs?", a:"It's subject to 20% withholding."},
+
+// ===== SOCIAL SECURITY =====
+{c:"Social Security", q:"What does OASDHI stand for?", a:"It's another name for Social Security (Old-Age, Survivors, Disability, and Health Insurance)."},
+{c:"Social Security", q:"What determines the amount of Social Security retirement benefits a person receives?", a:"Average Indexed Monthly Earnings (AIME)."},
+{c:"Social Security", q:"What is the Primary Insurance Amount (PIA)?", a:"The full amount of retirement benefits for an eligible person at full retirement age."},
+{c:"Social Security", q:"What are the two insured statuses for Social Security eligibility?", a:"Fully insured and currently insured."},
+{c:"Social Security", q:"How many quarters of coverage are needed to be fully insured?", a:"40 quarters."},
+{c:"Social Security", q:"What is the Social Security lump-sum death benefit amount?", a:"$255."},
+{c:"Social Security", q:"What is the 'blackout period'?", a:"The period between the insured's death and when the surviving spouse can receive retirement income benefits."},
+{c:"Social Security", q:"What does Social Security consider a 'disability'?", a:"An inability to engage in any occupation."},
+{c:"Social Security", q:"What does Medicare Part A cover? Part B? Part C? Part D?", a:"A = Hospital Insurance; B = Supplementary Medical Insurance; C = Medicare Advantage; D = Prescription Drug Plan."},
+
+// ===== HEALTH & ACCIDENT POLICY TYPES =====
+{c:"Health Policy Types", q:"What is morbidity?", a:"The probability or risk of getting sick or becoming disabled."},
+{c:"Health Policy Types", q:"What is the difference between 'accidental means' and 'accidental bodily injury/result'?", a:"Accidental means requires both the cause AND the result to be unintentional; accidental result only requires the outcome/loss to be unintended."},
+{c:"Health Policy Types", q:"What are the five distinct types of covered health losses?", a:"Medical expenses, disability, dental expense, accidental injury, and long-term care."},
+{c:"Health Policy Types", q:"How can insureds lower disability insurance premiums using elimination periods?", a:"By selecting a longer elimination period (works like a deductible stated in time)."},
+{c:"Health Policy Types", q:"Are individual disability income benefits taxable?", a:"No, they are income-tax-free."},
+{c:"Health Policy Types", q:"What's the difference between a limited risk policy and a special risk policy?", a:"A limited risk policy covers a common risk in a limited manner; a special risk policy covers an unusual hazard not normally covered."},
+{c:"Health Policy Types", q:"What is the principal sum in AD&D insurance?", a:"The death benefit payable — the policy's face amount and maximum benefit."},
+{c:"Health Policy Types", q:"What is the capital sum in AD&D insurance, and what's it typically equal to?", a:"The benefit paid for permanent loss of hearing/sight/dismemberment — typically 50% of the principal sum."},
+{c:"Health Policy Types", q:"In credit disability insurance, who is the policy owner/beneficiary, and who is the insured?", a:"The lender/creditor is owner and beneficiary; the debtor is the insured (and pays premiums)."},
+{c:"Health Policy Types", q:"What is the maximum non-renewable term allowed for short-term medical insurance?", a:"As long as 364 days (just under one year); it cannot be renewed."},
+{c:"Health Policy Types", q:"What are scheduled dental plans, and how do they differ from non-scheduled plans?", a:"Scheduled plans pay a fixed benefit per service with generally no deductible/coinsurance; non-scheduled (comprehensive) plans include deductibles and coinsurance, paid on a UCR basis."},
+{c:"Health Policy Types", q:"In non-scheduled dental plans, what's the typical coverage percentage for basic diagnostic/preventive, restorative, and major services?", a:"Preventive: ~100%; Restorative: ~80%; Major services: ~50%."},
+
+// ===== HEALTH INSURANCE PROVIDERS / MANAGED CARE =====
+{c:"Managed Care", q:"What are the two organizations that make up 'the Blues,' and what does each cover?", a:"Blue Cross covers hospital care; Blue Shield covers physician fees."},
+{c:"Managed Care", q:"What is the right of assignment in a traditional indemnity plan?", a:"It allows the insurer to pay the provider directly instead of reimbursing the insured."},
+{c:"Managed Care", q:"What review happens before elective surgery to reduce unnecessary procedures?", a:"Mandatory second opinion."},
+{c:"Managed Care", q:"What's the difference between prospective, concurrent, and retrospective review?", a:"Prospective = before admission/treatment; concurrent = during treatment; retrospective = after treatment."},
+{c:"Managed Care", q:"What federal requirements must an employer meet to offer an HMO?", a:"At least 25 employees, contribute to the plan, stress preventive care, and maintain minimum reserves."},
+{c:"Managed Care", q:"Who is the 'gatekeeper' in an HMO?", a:"The Primary Care Physician (PCP), who controls all referrals to specialists."},
+{c:"Managed Care", q:"What's the difference between a closed panel and an open panel HMO?", a:"Closed panel = physicians work exclusively for/at the HMO's facility; open panel = physicians see subscribers in their own private offices."},
+{c:"Managed Care", q:"What HMO model pays a group of physicians a capitation fee, and the group pays the individual physicians?", a:"The Group (Practice) Model (closed panel)."},
+{c:"Managed Care", q:"What HMO structure delivers care through a network of physicians working part-time from their own offices?", a:"Individual/Independent Practice Association (IPA) — open panel."},
+{c:"Managed Care", q:"Do PPOs provide healthcare directly, or just finance it?", a:"PPOs only finance/insure care through a network — they don't deliver healthcare themselves."},
+{c:"Managed Care", q:"Does the traditional PPO model require a PCP referral to see an in-network specialist?", a:"No."},
+{c:"Managed Care", q:"What plan combines HMO features in-network with indemnity-style out-of-network coverage, using a PCP to coordinate in-network care?", a:"A Point-of-Service (POS) plan."},
+{c:"Managed Care", q:"What is an EPO, and how is it a hybrid of HMO and PPO?", a:"An Exclusive Provider Organization — like a PPO, no referral needed in-network; like an HMO, insured pays fully out-of-pocket for out-of-network care."},
+
+// ===== GROUP INSURANCE / COBRA / HIPAA =====
+{c:"Group Insurance & COBRA", q:"What is a 'natural group' for group insurance eligibility?", a:"A group formed for a reason other than obtaining insurance."},
+{c:"Group Insurance & COBRA", q:"Who owns the master contract in a group policy?", a:"The employer or sponsoring organization (the master policy owner); individuals get a certificate of insurance."},
+{c:"Group Insurance & COBRA", q:"What participation percentage is generally required for contributory vs. non-contributory group plans?", a:"Contributory: 75% of eligible employees; Non-contributory: 100% participation."},
+{c:"Group Insurance & COBRA", q:"What is a Multiple Employer Trust (MET)?", a:"A method combining 10+ small employers into a single insurance pool holding the master contract."},
+{c:"Group Insurance & COBRA", q:"How many employees must a company have to be a 'COBRA group'?", a:"20 or more employees."},
+{c:"Group Insurance & COBRA", q:"How many days does an employee have to notify the plan, and how many days to elect COBRA?", a:"Employer must notify within 14 days of the qualifying event; employee has 60 days to elect COBRA."},
+{c:"Group Insurance & COBRA", q:"What are the COBRA continuation periods for loss of employment, loss of dependent status, and disability?", a:"18 months (loss of employment), 36 months (loss of dependent benefits), 29 months (disability)."},
+{c:"Group Insurance & COBRA", q:"What percentage of the group premium does a COBRA beneficiary pay?", a:"102% of the group premium (includes a 2% administration fee)."},
+{c:"Group Insurance & COBRA", q:"How many days does a group plan give employees to provide notice of plan termination?", a:"45 days."},
+{c:"Group Insurance & COBRA", q:"What does HIPAA prevent regarding pre-existing conditions when changing jobs?", a:"It prevents new pre-existing condition exclusions if there's no coverage gap of 63 days or more (using 'creditable coverage')."},
+{c:"Group Insurance & COBRA", q:"How often must plan sponsors provide a Notice of Privacy Practices under HIPAA?", a:"At enrollment and then every three years."},
+{c:"Group Insurance & COBRA", q:"Under HIPAA, what is the 'look-back period' for pre-existing conditions on major medical plans?", a:"Six months before coverage began."},
+{c:"Group Insurance & COBRA", q:"Within how many days after birth/adoption must a newborn with a congenital condition be added to be covered?", a:"30 days."},
+
+// ===== MEDICAL EXPENSE INSURANCE / ACA =====
+{c:"Medical Expense & ACA", q:"What's the difference between a corridor deductible and an integrated deductible?", a:"A corridor deductible is paid after basic coverage ends and before major medical begins; an integrated deductible lets basic benefits count toward (reduce) the deductible."},
+{c:"Medical Expense & ACA", q:"What's a family deductible?", a:"It credits all family members' expenses toward a single limit, waiving the deductible for everyone once met — even if individual deductibles aren't."},
+{c:"Medical Expense & ACA", q:"What three things make up an insured's out-of-pocket maximum (stop-loss)?", a:"Deductible, co-insurance, and other co-pays."},
+{c:"Medical Expense & ACA", q:"What are the four ACA 'metal tier' actuarial values?", a:"Bronze 60%, Silver 70%, Gold 80%, Platinum 90%."},
+{c:"Medical Expense & ACA", q:"What's the maximum age for dependents to remain on a parent's ACA plan?", a:"Age 26."},
+{c:"Medical Expense & ACA", q:"What are 'grandfathered plans' exempt from under the ACA?", a:"Covering preventive care for free, covering all essential health benefits, and covering pre-existing conditions in the individual market."},
+{c:"Medical Expense & ACA", q:"What tax credit is available to small employers with fewer than 25 employees for employee premiums?", a:"A maximum 50% tax credit."},
+{c:"Medical Expense & ACA", q:"What are the three elements of a Consumer Driven Health Plan (CDHP)?", a:"A tax-advantaged savings vehicle, a corridor/integrated deductible, and a qualifying high-deductible insurance policy."},
+{c:"Medical Expense & ACA", q:"What's the difference between an HSA and an HRA?", a:"HSA is individually owned/portable, funded by anyone with a qualified HDHP; HRA can only be set up by the employer, has no contribution limit, and is NOT portable."},
+{c:"Medical Expense & ACA", q:"What happens to unused Flexible Spending Account (FSA) funds at year-end?", a:"They're forfeited ('use it or lose it') except up to $500 that may carry over."},
+{c:"Medical Expense & ACA", q:"Can a self-employed sole proprietor deduct 100% of health insurance premiums?", a:"Yes, as a business expense."},
+
+// ===== HEALTH INSURANCE POLICY PROVISIONS =====
+{c:"Health Policy Provisions", q:"How many required (mandatory) and optional uniform provisions did the NAIC develop?", a:"12 required (mandatory) provisions and 11 optional provisions."},
+{c:"Health Policy Provisions", q:"After how many years does the 'time limit on certain defenses' (incontestability) provision apply to health policies?", a:"Three years (assume 3 unless the question specifies otherwise)."},
+{c:"Health Policy Provisions", q:"What are the minimum grace periods for weekly, monthly, and other premium modes?", a:"7 days (weekly), 10 days (monthly), 31 days (other modes)."},
+{c:"Health Policy Provisions", q:"Within how many days must an insured give notice of claim?", a:"20 days, or as soon as reasonably possible."},
+{c:"Health Policy Provisions", q:"Within how many days must an insurer provide a claim form after receiving notice of claim?", a:"15 days."},
+{c:"Health Policy Provisions", q:"Within how many days must an insured submit proof of loss (and the extension if legally incapable)?", a:"90 days, extendable up to one year if legally incapable."},
+{c:"Health Policy Provisions", q:"How long must an insured wait after proof of loss before suing the insurer under the legal actions provision, and what's the suit deadline?", a:"Must wait 60 days; suit must begin within 3 years of proof of loss."},
+{c:"Health Policy Provisions", q:"Under the change of occupation provision, what happens if the new job has higher/lower risk?", a:"Higher risk job → benefit is decreased; lower risk job → premium is decreased."},
+{c:"Health Policy Provisions", q:"What is the typical free-look period for health insurance, and when does it start?", a:"10 days, beginning when the policy is delivered."},
+{c:"Health Policy Provisions", q:"What's the difference between a non-cancellable and a guaranteed renewable policy regarding premiums?", a:"Non-cancellable: premium can never be increased. Guaranteed renewable: insurer can increase premium on a class basis, but can't cancel or change terms."},
+{c:"Health Policy Provisions", q:"What does the probationary period exclude, and for how long?", a:"Excludes losses due to illness (not accidents) for a one-time 30-day period after the policy is issued/reinstated."},
+{c:"Health Policy Provisions", q:"What is an impairment (waiver of impairment) rider also called?", a:"An exclusion rider, coverage waiver, or waiver of disability."},
+{c:"Health Policy Provisions", q:"What is the Coordination of Benefits (COB) provision designed to prevent?", a:"Duplication of benefits — it caps total payments at the actual cost of care and establishes which plan pays first (primary)."},
+{c:"Health Policy Provisions", q:"Under COB, is employer group coverage or Medicare primary for a working person age 65+ at a COBRA-group employer (20+ employees)?", a:"Employer-sponsored group insurance is primary."},
+{c:"Health Policy Provisions", q:"Under COB, if a group has fewer than 20 employees, which is primary — the group plan or Medicare?", a:"Medicare is primary."},
+];
+
+// ---- state ----
+let order = DECK.map((_,i)=>i);
+let idx = 0;
+let flipped = false;
+let knownSet = new Set();
+let flaggedSet = new Set();
+let mode = "all";
+let currentPool = order.slice();
+
+const catFilter = document.getElementById('catFilter');
+const modeFilter = document.getElementById('modeFilter');
+const card = document.getElementById('card');
+const qtext = document.getElementById('qtext');
+const atext = document.getElementById('atext');
+const frontCat = document.getElementById('frontCat');
+const backCat = document.getElementById('backCat');
+const counter = document.getElementById('counter');
+const fill = document.getElementById('fill');
+const reviewCount = document.getElementById('reviewCount');
+const stage = document.getElementById('stage');
+const navrow = document.getElementById('navrow');
+const markrow = document.getElementById('markrow');
+const doneScreen = document.getElementById('doneScreen');
+const doneStats = document.getElementById('doneStats');
+
+// build category dropdown
+const cats = ["All categories", ...new Set(DECK.map(c=>c.c))];
+cats.forEach(c=>{
+  const opt = document.createElement('option');
+  opt.value = c;
+  opt.textContent = c;
+  catFilter.appendChild(opt);
+});
+
+function buildPool(){
+  let base = DECK.map((_,i)=>i);
+  const cat = catFilter.value;
+  if(cat && cat !== "All categories"){
+    base = base.filter(i => DECK[i].c === cat);
+  }
+  if(mode === "review"){
+    base = base.filter(i => flaggedSet.has(i));
+  }
+  currentPool = base;
+  idx = 0;
+}
+
+function renderCard(){
+  doneScreen.classList.remove('show');
+  stage.classList.remove('hidden');
+  navrow.classList.remove('hidden');
+  markrow.classList.remove('hidden');
+
+  if(currentPool.length === 0){
+    stage.classList.add('hidden');
+    navrow.classList.add('hidden');
+    markrow.classList.add('hidden');
+    doneScreen.classList.add('show');
+    doneStats.textContent = "No cards match this filter yet — flag a few first.";
+    counter.textContent = "0 / 0";
+    fill.style.width = "0%";
+    return;
+  }
+
+  if(idx >= currentPool.length){
+    stage.classList.add('hidden');
+    navrow.classList.add('hidden');
+    markrow.classList.add('hidden');
+    doneScreen.classList.add('show');
+    doneStats.textContent = `You reviewed ${currentPool.length} cards · ${flaggedSet.size} flagged for review.`;
+    return;
+  }
+
+  const i = currentPool[idx];
+  const d = DECK[i];
+  qtext.textContent = d.q;
+  atext.textContent = d.a;
+  frontCat.textContent = d.c;
+  backCat.textContent = d.c;
+  flipped = false;
+  card.classList.remove('flipped');
+
+  counter.textContent = `${idx+1} / ${currentPool.length}`;
+  fill.style.width = `${((idx)/currentPool.length)*100}%`;
+  reviewCount.textContent = `${flaggedSet.size} flagged`;
+}
+
+card.addEventListener('click', ()=>{
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+});
+
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  idx++;
+  renderCard();
+});
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(idx>0){ idx--; renderCard(); }
+});
+
+document.getElementById('markKnow').addEventListener('click', ()=>{
+  const i = currentPool[idx];
+  knownSet.add(i);
+  flaggedSet.delete(i);
+  idx++;
+  renderCard();
+});
+document.getElementById('markReview').addEventListener('click', ()=>{
+  const i = currentPool[idx];
+  flaggedSet.add(i);
+  idx++;
+  renderCard();
+});
+
+document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+  for(let i=currentPool.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [currentPool[i],currentPool[j]]=[currentPool[j],currentPool[i]];
+  }
+  idx = 0;
+  renderCard();
+});
+
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  buildPool();
+  renderCard();
+});
+
+document.getElementById('reviewFlagged').addEventListener('click', ()=>{
+  modeFilter.value = "review";
+  mode = "review";
+  buildPool();
+  renderCard();
+});
+
+catFilter.addEventListener('change', ()=>{
+  buildPool();
+  renderCard();
+});
+modeFilter.addEventListener('change', ()=>{
+  mode = modeFilter.value;
+  buildPool();
+  renderCard();
+});
+
+buildPool();
+renderCard();
+</script>
+</body>
+</html>
